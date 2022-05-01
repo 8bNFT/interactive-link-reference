@@ -23,3 +23,15 @@ body {
     align-items: center;
     justify-content: center;
 }
+
+input, select {
+    border: 1px solid #e0e0e0;
+    padding: .5rem;
+    border-radius: 3px;
+}
+
+input:focus, input:active,
+select:focus, select:active {
+    outline: 1px solid var(--accent);
+    border-color: var(--accent)
+}

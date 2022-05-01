@@ -1,3 +1,5 @@
+import { is_number, is_integer, is_valid_eth_address } from "./validators"
+
 export const types = {
     ETH: "ETH",
     ERC20: "ERC20",
@@ -8,15 +10,18 @@ const fields = {
     base: {
         ERC721: {
             tokenId: {
-                label: "Token ID"
+                label: "Token ID",
+                validator: is_integer
             },
             tokenAddress: {
-                label: "Token (Collection) Address"
+                label: "Token (Collection) Address",
+                validator: is_valid_eth_address
             },
         },
         ERC20: {
             tokenAddress: {
-                label: "Token Address"
+                label: "Token Address",
+                validator: is_valid_eth_address
             },
             symbol: {
                 label: "Token Symbol"
@@ -27,13 +32,16 @@ const fields = {
     additional: {
         amount: {
             label: "Amount",
-            types: ["ETH", "ERC20"]
+            types: ["ETH", "ERC20"],
+            validator: is_number
         },
         toAddress: {
-            label: "Recipient"
+            label: "Recipient",
+            validator: is_valid_eth_address
         },
         currencyAddress: {
-            label: "ERC20 Token Address"
+            label: "ERC20 Token Address",
+            validator: is_valid_eth_address
         },
         orderIds: {
             label: "Order IDs (comma, separated)",

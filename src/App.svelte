@@ -1,14 +1,17 @@
 <script>
   import { Link } from '@imtbl/imx-sdk';
   import { getFields, methods, types } from './fields'
+  import Input from './components/Input.svelte';
   import hljs from 'highlight.js/lib/core';
   import javascript from 'highlight.js/lib/languages/javascript';
   hljs.registerLanguage('javascript', javascript);
 
   let network = "ropsten"
-  let code
+  let code_container
   let payload = {}
-  let result, error = ""
+
+  let output = {}
+
   let method = "setup"
   let fields = getFields(method)
 
@@ -51,18 +54,22 @@
   }
 
   const constuctPayload = ()=>{
-    payload = {}
+    let _payload = {}
     for(let field of fields){
+      if(field.ignore) continue
       if(field.key === "type"){
-        if(field.ignore) return
-        payload.type = field.options.selected
+        _payload.type = field.options.selected
+        continue
       }
+
+      _payload[field.key] = payload[field.key]
     }
+    payload = _payload
   }
 
   const call = async ()=>{
-    result = ""
-    error = ""
+    output = {}
+
     let missing = []
     for(let field of fields){
       if(!payload[field.key]){
@@ -72,13 +79,22 @@
       }
     }
 
-    if(missing.length) return error = "Missing required field(s): " + missing.join(", ")
+    if(missing.length) return output = {
+      status: "error",
+      data: "Missing required field(s): " + missing.join(", ")
+    }
 
     let link = new Link(getLinkURL())
     try{
-      result = await link[method](parsePayload(payload))
+      output = {
+        status: "success",
+        data: await link[method](parsePayload(payload))
+      }
     }catch(err){
-      error = err.message || JSON.stringify(err)
+      output = {
+        status: "error",
+        data: err.message || JSON.stringify(err)
+      }
     }
   }
 
@@ -91,7 +107,7 @@ let link = new Link('${getLinkURL()}')
 
 try{
   // Call the method
-  let result = await link.${method}(${JSON.stringify(parsePayload(payload), null, 4).replace("\n}", "\n  }")})
+  let result = await link.${method}(${JSON.stringify(parsePayload(payload), null, 4).replace(/\n(}|])/, "\n  $1")})
   // Print the result
   console.log(result)
 }catch(error){
@@ -101,8 +117,8 @@ try{
   }
 
   const highlightCode = ()=>{
-    if(!code) return
-    return code.innerHTML = hljs.highlight(getCode(), {language: "javascript"}).value
+    if(!code_container) return
+    return code_container.innerHTML = hljs.highlight(getCode(), {language: "javascript"}).value
   }
 
   let renameTimeout
@@ -115,10 +131,10 @@ try{
     }
   }
 
-  $: payload, payload = Object.fromEntries(Object.entries(payload).filter( ([k, v]) => v )), highlightCode()
-  $: fields, constuctPayload(), highlightCode(), error = "", result = ""
-  $: method, fields = getFields(method)
-  $: code, highlightCode()
+  $: payload, payload = Object.fromEntries(Object.entries(payload).filter( ([_, v]) => v )), highlightCode()
+  $: fields, constuctPayload(), highlightCode(), output = {}
+  $: method, payload = {}, fields = getFields(method)
+  $: code_container, highlightCode()
   $: network, highlightCode()
 </script>
 
@@ -139,7 +155,7 @@ try{
         </select>
       </label>
       
-      {#each fields as field}
+      {#each fields as field (method + field.key)}
       <div class="field">
         <label>
           <span>{field.options.label || field.key}{field.options.optional ? " (optional)" : ""}</span>
@@ -150,7 +166,8 @@ try{
               {/each}
             </select>
           {:else}
-            <input bind:value={payload[field.key]}>
+            <Input bind:value={payload[field.key]} validator={field.options.validator} />
+            <!-- <input bind:value={payload[field.key]}> -->
           {/if}
         </label>
       </div>
@@ -158,32 +175,37 @@ try{
       
       <button class="submit" on:click={call}>Call method</button>
     </div>
+
     <div class="code">
       <button on:click={copyCode}>Copy to clipboard</button>
-      <pre><code class="hljs" bind:this={code}></code></pre>
+      <pre><code class="hljs" bind:this={code_container}></code></pre>
     </div>
+
     <div class="output">
       <div class="icon">
-        {#if error}
-          <svg class="error" xmlns="http://www.w3.org/2000/svg" width="4.066" height="4.066" viewBox="0 0 4.066 4.066">
-            <path id="Icon_material-error-outline" data-name="Icon material-error-outline" d="M4.83,5.643h.407v.407H4.83Zm0-1.626h.407v1.22H4.83ZM5.031,3A2.033,2.033,0,1,0,7.066,5.033,2.032,2.032,0,0,0,5.031,3Zm0,3.659A1.626,1.626,0,1,1,6.659,5.033,1.626,1.626,0,0,1,5.033,6.659Z" transform="translate(-3 -3)"/>
-          </svg>
-          <span>Error.</span>
-        {:else if result}
-          <svg class="success" xmlns="http://www.w3.org/2000/svg" width="4.166" height="4.166" viewBox="0 0 4.166 4.166">
-            <g id="Icon_ionic-ios-checkmark-circle-outline" data-name="Icon ionic-ios-checkmark-circle-outline" transform="translate(-3.325 -3.325)">
-              <path id="Path_1" data-name="Path 1" d="M12.528,12.395l-.172-.177a.037.037,0,0,0-.027-.012h0a.035.035,0,0,0-.027.012l-1.192,1.2-.434-.434a.038.038,0,0,0-.055,0l-.174.174a.039.039,0,0,0,0,.056l.547.547a.173.173,0,0,0,.114.056.181.181,0,0,0,.113-.054h0l1.307-1.314A.042.042,0,0,0,12.528,12.395Z" transform="translate(-6.078 -7.604)" stroke="currentColor" stroke-width="0.1"/>
-              <path id="Path_2" data-name="Path 2" d="M5.408,3.649a1.759,1.759,0,1,1-1.244.515,1.748,1.748,0,0,1,1.244-.515m0-.274A2.033,2.033,0,1,0,7.441,5.408,2.033,2.033,0,0,0,5.408,3.375Z" transform="translate(0 0)" stroke="currentColor" stroke-width="0.1"/>
-            </g>
-          </svg>
-          <span>Success!</span>
+        {#if output.data}
+          {#if output.status === "error"}
+            <svg class="error" xmlns="http://www.w3.org/2000/svg" width="4.066" height="4.066" viewBox="0 0 4.066 4.066">
+              <path id="Icon_material-error-outline" data-name="Icon material-error-outline" d="M4.83,5.643h.407v.407H4.83Zm0-1.626h.407v1.22H4.83ZM5.031,3A2.033,2.033,0,1,0,7.066,5.033,2.032,2.032,0,0,0,5.031,3Zm0,3.659A1.626,1.626,0,1,1,6.659,5.033,1.626,1.626,0,0,1,5.033,6.659Z" transform="translate(-3 -3)"/>
+            </svg>
+            <span>Error.</span>
+          {:else}
+            <svg class="success" xmlns="http://www.w3.org/2000/svg" width="4.166" height="4.166" viewBox="0 0 4.166 4.166">
+              <g id="Icon_ionic-ios-checkmark-circle-outline" data-name="Icon ionic-ios-checkmark-circle-outline" transform="translate(-3.325 -3.325)">
+                <path id="Path_1" data-name="Path 1" d="M12.528,12.395l-.172-.177a.037.037,0,0,0-.027-.012h0a.035.035,0,0,0-.027.012l-1.192,1.2-.434-.434a.038.038,0,0,0-.055,0l-.174.174a.039.039,0,0,0,0,.056l.547.547a.173.173,0,0,0,.114.056.181.181,0,0,0,.113-.054h0l1.307-1.314A.042.042,0,0,0,12.528,12.395Z" transform="translate(-6.078 -7.604)" stroke="currentColor" stroke-width="0.1"/>
+                <path id="Path_2" data-name="Path 2" d="M5.408,3.649a1.759,1.759,0,1,1-1.244.515,1.748,1.748,0,0,1,1.244-.515m0-.274A2.033,2.033,0,1,0,7.441,5.408,2.033,2.033,0,0,0,5.408,3.375Z" transform="translate(0 0)" stroke="currentColor" stroke-width="0.1"/>
+              </g>
+            </svg>
+            <span>Success!</span>
+          {/if}
         {:else}
-          <span>Output</span>
+          <span>Output:</span>
         {/if}
       </div>
-      <pre><code>{#if error}{error}{:else if result}{JSON.stringify(result, null, 4)}{/if}</code></pre>
+      <pre><code>{output.data && JSON.stringify(output.data || "", null, 4) || ""}</code></pre>
     </div>
   </div>
+
   <a href="https://docs.x.immutable.com/docs" target="_blank">
     <img class="logo" src="./logo.png" />
   </a>
@@ -193,9 +215,17 @@ try{
 
 <style>
   .logo {
-    margin-top: 1.5rem;
+    margin-top: 2rem;
     width: 240px;
     margin-left: calc(50% - 120px);
+    filter: saturate(0);
+    opacity: .65;
+    transition: all .5s
+  }
+
+  .logo:hover {
+    opacity: 1;
+    filter: saturate(1)
   }
 
   .grid {
@@ -206,6 +236,12 @@ try{
     border-radius: 12px;
     box-shadow: 0px 8px 40px rgba(0, 0, 0, .1);
     gap: .5rem;
+  }
+
+  @media screen and (max-width: 768px){
+    .grid {
+      grid-template-columns: 1fr;
+    }
   }
 
   .grid > div:first-child {
@@ -289,18 +325,6 @@ try{
     margin: .75rem 0
   }
 
-  input, select {
-    border: 1px solid #e0e0e0;
-    padding: .5rem;
-    border-radius: 3px;
-  }
-
-  input:focus, input:active,
-  select:focus, select:active {
-    outline: 1px solid var(--accent);
-    border-color: var(--accent)
-  }
-
   .icon {
     display: flex;
     align-items: center;
@@ -337,5 +361,9 @@ try{
 
   .submit:hover {
     background-color: #29b8ce
+  }
+  
+  .hljs {
+    overflow: initial
   }
 </style>
