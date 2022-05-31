@@ -43,10 +43,8 @@
   const parsePayload = ()=>{
     let _p = {...payload}
     for(let field of fields){
-      if(field.options.type === "array"){
-        if(!_p[field.key]) continue
-        _p[field.key] = parseArray(_p[field.key], field.options.separator, field.options.output)
-      }
+      if(field.options.type === "array" && _p[field.key]) _p[field.key] = parseArray(_p[field.key], field.options.separator, field.options.output)
+      if(!_p[field.key]) delete _p[field.key]
     }
     
     if(method === "transfer") return [_p]
@@ -84,7 +82,8 @@
       data: "Missing required field(s): " + missing.join(", ")
     }
 
-    let link = new Link(getLinkURL())
+    const link = new Link(getLinkURL())
+    
     try{
       output = {
         status: "success",
@@ -166,7 +165,15 @@ try{
               {/each}
             </select>
           {:else}
-            <Input bind:value={payload[field.key]} validator={field.options.validator} />
+            {#if field.options.type === "select" }
+              <select bind:value={payload[field.key]}>
+                {#each field.options.options as opts}
+                  <option value={opts.value}>{opts.label}</option>
+                {/each}
+              </select>
+            {:else}
+              <Input bind:value={payload[field.key]} validator={field.options.validator} />
+            {/if}
             <!-- <input bind:value={payload[field.key]}> -->
           {/if}
         </label>

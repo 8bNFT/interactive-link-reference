@@ -48,13 +48,36 @@ const fields = {
             type: "array",
             separator: ",",
             output: "string"
+        },
+        orderId: {
+            label: "Order ID",
+            validator: is_integer
+        },
+        providerPreference: {
+            label: "Provider Preference",
+            type: "select",
+            options: [
+                { label: "Default", value: undefined },
+                { label: "None", value: "none" },
+                { label: "Metamask", value: "metamask" },
+                { label: "Magic.link", value: "magic_link" },
+                { label: "WalletConnect", value: "wallet_connect" }
+            ]
+        },
+        message: {
+            label: "Message to sign",
+        },
+        description: {
+            label: "Description"
         }
     }
 }
 
 export const methods = {
     setup: {
-        fields: {}
+        fields: {
+            optional: ["providerPreference"]
+        }
     },
     deposit: {
         types: Object.keys(types),
@@ -95,9 +118,22 @@ export const methods = {
             force_fields: true
         }
     },
+    cancel: {
+        fields: {
+            additional: ["orderId"]
+        }
+    },
     buy: {
         fields: {
             additional: ["orderIds"]
+        }
+    },
+    history: {
+        fields: {}
+    },
+    sign: {
+        fields: {
+            additional: ["message", "description"]
         }
     }
 }

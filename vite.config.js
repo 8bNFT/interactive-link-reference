@@ -7,6 +7,11 @@ export default defineConfig({
   server: {
     port: 8080
   },
+  build: {
+    commonjsOptions: {
+      transformMixedEsModules: true
+    }
+  },
   plugins: [svelte()],
   resolve: {
     alias: {
