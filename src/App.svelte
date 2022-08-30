@@ -1,6 +1,16 @@
 <script>
+  /**
+   * Planned changes
+   * - modify field definition, make it more readable and sane
+   * - allow for network specific options, fields
+   * - introduce value parsers
+   * - make element generation more generic, allow for other new types
+   * - enable children (transfer, batchTransferNFT), child elements
+   * - introduce field dependency (required if one of is selected)
+  */
+
   import { Link } from '@imtbl/imx-sdk';
-  import { getFields, methods, types } from './fields'
+  import { getFields, methods } from './fields'
   import Input from './components/Input.svelte';
   import hljs from 'highlight.js/lib/core';
   import javascript from 'highlight.js/lib/languages/javascript';
@@ -32,6 +42,18 @@
     fields = getFields(method, value)
   }
 
+  const modifyCheckbox = (key, value, add) => {
+    let current = {...(payload[key]||{})}
+    if(typeof current === "undefined") current = {}
+    if(add === true){
+      current[value] = true
+    } else {
+      current[value] = false
+    }
+
+    payload[key] = current
+  }
+
   const parseArray = (value, separator, output)=>{
     let arr = value.split(separator)
     if(output === "string"){
@@ -40,10 +62,22 @@
     return arr
   }
 
+  const parseCheckbox = (checkboxes) => {
+    if(!checkboxes) return undefined
+    const arr = Object.entries(checkboxes).map(([k, v]) => {
+      if(v === false) return
+      return k
+    }).filter(v => v)
+
+    if(!arr.length) return undefined
+    return arr
+  }
+
   const parsePayload = ()=>{
     let _p = {...payload}
     for(let field of fields){
       if(field.options.type === "array" && _p[field.key]) _p[field.key] = parseArray(_p[field.key], field.options.separator, field.options.output)
+      if(field.options.type === "checkbox") _p[field.key] = parseCheckbox(_p[field.key])
       if(!_p[field.key]) delete _p[field.key]
     }
     
@@ -51,7 +85,7 @@
     return _p
   }
 
-  const constuctPayload = ()=>{
+  const constructPayload = ()=>{
     let _payload = {}
     for(let field of fields){
       if(field.ignore) continue
@@ -131,7 +165,7 @@ try{
   }
 
   $: payload, payload = Object.fromEntries(Object.entries(payload).filter( ([_, v]) => v )), highlightCode()
-  $: fields, constuctPayload(), highlightCode(), output = {}
+  $: fields, constructPayload(), highlightCode(), output = {}
   $: method, payload = {}, fields = getFields(method)
   $: code_container, highlightCode()
   $: network, highlightCode()
@@ -156,7 +190,7 @@ try{
       
       {#each fields as field (method + field.key)}
       <div class="field">
-        <label>
+        <label for={field.options.type === "checkbox" ? "" : null}>
           <span>{field.options.label || field.key}{field.options.optional ? " (optional)" : ""}</span>
           {#if field.key === "type"}
             <select on:change={(e)=>toggleType(e)}>
@@ -171,6 +205,17 @@ try{
                   <option value={opts.value}>{opts.label}</option>
                 {/each}
               </select>
+            {:else if field.options.type == "checkbox"}
+              {#each field.options.options as opts}
+                <label style="display: block">
+                  <input 
+                    type="checkbox" 
+                    on:change={({target: { checked }}) => modifyCheckbox(field.key, opts.value, checked)} 
+                    value={opts.value}
+                  >
+                  {opts.label}
+                </label>
+              {/each}
             {:else}
               <Input bind:value={payload[field.key]} validator={field.options.validator} />
             {/if}

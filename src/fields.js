@@ -6,6 +6,30 @@ export const types = {
     ERC721: "ERC721"
 }
 
+const methodFields = {
+    fiatToCrypto: {
+        cryptoCurrencies: {
+            label: "Available currencies",
+            type: "checkbox",
+            options: [
+                { label: "ETH", value: "ETH" },
+                { label: "USDC", value: "USDC" },
+                { label: "IMX (mainnet only)", value: "IMX" },
+                { label: "GODS (mainnet only)", value: "GODS" }
+            ]
+        }
+    },
+    cryptoToFiat: {
+        cryptoCurrencies: {
+            label: "Available currencies",
+            type: "checkbox",
+            options: [
+                { label: "ETH", value: "ETH" }
+            ]
+        }
+    }
+}
+
 const fields = {
     base: {
         ERC721: {
@@ -61,7 +85,8 @@ const fields = {
                 { label: "None", value: "none" },
                 { label: "Metamask", value: "metamask" },
                 { label: "Magic.link", value: "magic_link" },
-                { label: "WalletConnect", value: "wallet_connect" }
+                { label: "WalletConnect", value: "wallet_connect" },
+                { label: "GameStop", value: "gamestop" }
             ]
         },
         message: {
@@ -87,6 +112,11 @@ export const methods = {
             include_type: true
         }
     },
+    fiatToCrypto: {
+        fields: {
+            optional: ["cryptoCurrencies"]
+        }
+    },
     prepareWithdrawal: {
         types: Object.keys(types),
         fields: {
@@ -100,6 +130,11 @@ export const methods = {
         fields: {
             base: true,
             include_type: true
+        }
+    },
+    cryptoToFiat: {
+        fields: {
+            optional: ["cryptoCurrencies"]
         }
     },
     transfer: {
@@ -135,6 +170,9 @@ export const methods = {
         fields: {
             additional: ["message", "description"]
         }
+    },
+    getPublicKey: {
+        fields: {}
     }
 }
 
@@ -156,7 +194,7 @@ export const extractInputs = (method, type = false)=>{
 
         if(["additional", "optional"].includes(k)){
             for(let field of v){
-                let f = {...fields.additional[field], optional: k === "optional" }
+                let f = {...(methodFields[method] && methodFields[method][field] || fields.additional[field]), optional: k === "optional" }
                 if(!f.types){
                     _fields.push({key: field, options: f})
                     continue
