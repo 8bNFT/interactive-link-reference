@@ -1,3 +1,6 @@
+import BigNumber from "bignumber.js"
+BigNumber.config({ EXPONENTIAL_AT: 1e+9 })
+
 export const is_valid_eth_address = (_address) => {
     let address = _address.toLowerCase().trim()
 
@@ -9,17 +12,21 @@ export const is_valid_eth_address = (_address) => {
 }
 
 export const is_integer = (_n) => {
-    let n = parseFloat(_n)
-    if(isNaN(n)) return { error: "Must be a number" }
-    if(!Number.isInteger(n) || String(n) !== _n) return { error: "Must be an integer" }
-    return {}
+    const n = new BigNumber(_n)
+
+    if(n.isNaN()) return { error: "Must be a number" }
+    if(!n.isInteger()) return { error: "Must be an integer" }
+    
+    return {
+        sanitized: n.toString()
+    }
 }
 
 export const is_number = (_n)=>{
-    let n = parseFloat(_n)
-    if(isNaN(n)) return { error: "Must be a number" }
-    if (!/^\d*(\.\d+)?$/.test(_n)) return { error: "Must be a number" }
+    const n = new BigNumber(_n)
+    if(n.isNaN()) return { error: "Must be a number" }
+
     return {
-        sanitized: String(n)
+        sanitized: n.toString()
     }
 }
