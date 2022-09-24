@@ -16,7 +16,7 @@
   import javascript from 'highlight.js/lib/languages/javascript';
   hljs.registerLanguage('javascript', javascript);
 
-  let network = "ropsten"
+  let network = "sandbox"
   let code_container
   let payload = {}
 
@@ -26,11 +26,11 @@
   let fields = getFields(method)
 
   const toggleNetwork = ()=>{
-    if(network === "ropsten") return network = "mainnet"
-    network = "ropsten"
+    if(network === "sandbox") return network = "mainnet"
+    network = "sandbox"
   }
 
-  const getLinkURL = ()=>`https://link${network === "ropsten" ? ".ropsten" : ""}.x.immutable.com`
+  const getLinkURL = ()=>`https://link${network === "sandbox" ? ".sandbox" : ""}.x.immutable.com`
 
   const toggleMethod = (e)=>{
     	let { value } = e.target
@@ -175,7 +175,7 @@ try{
   <div class="grid">
     <div>
       <div on:click={toggleNetwork} class="toggle">
-        <span class:active={network === "ropsten"}>Ropsten</span>
+        <span class:active={network === "sandbox"}>Sandbox</span>
         <span class:active={network === "mainnet"}>Mainnet</span>
       </div>
   
