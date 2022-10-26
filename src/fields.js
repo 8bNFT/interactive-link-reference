@@ -175,6 +175,7 @@ export const methods = {
         fields: {}
     },
     makeOffer: {
+        networks: ["sandbox"],
         types: ["ERC721"],
         fields: {
             base: true,
@@ -184,11 +185,13 @@ export const methods = {
         }
     },
     cancelOffer: {
+        networks: ["sandbox"],
         fields: {
             additional: ["orderId"]
         }
     },
     acceptOffer: {
+        networks: ["sandbox"],
         fields: {
             additional: ["orderId"]
         }
