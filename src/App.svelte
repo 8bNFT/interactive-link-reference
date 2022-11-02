@@ -14,6 +14,7 @@
   import Input from './components/Input.svelte';
   import hljs from 'highlight.js/lib/core';
   import javascript from 'highlight.js/lib/languages/javascript';
+  // import { tick } from 'svelte';
   hljs.registerLanguage('javascript', javascript);
 
   let network = "sandbox"
@@ -24,6 +25,7 @@
 
   let method = "setup"
   let fields = getFields(method)
+  // let select
 
   const toggleNetwork = ()=>{
     if(network === "sandbox") return network = "mainnet"
@@ -32,9 +34,9 @@
 
   const getLinkURL = ()=>`https://link${network === "sandbox" ? ".sandbox" : ""}.x.immutable.com`
 
-  const toggleMethod = (e)=>{
-    	let { value } = e.target
-      method = value
+  const toggleMethod =  e => {
+    let { value } = e.target
+    method = value
   }
 
   const toggleType = (e)=>{
@@ -164,11 +166,18 @@ try{
     }
   }
 
+  // const checkMethodAvailable = async select => {
+  //   if(!select) return
+  //   await tick()
+  //   if(select.value !== method) method = select.value
+  // }
+
   $: payload, payload = Object.fromEntries(Object.entries(payload).filter( ([_, v]) => v )), highlightCode()
   $: fields, constructPayload(), highlightCode(), output = {}
   $: method, payload = {}, fields = getFields(method)
   $: code_container, highlightCode()
   $: network, highlightCode()
+  // $: network, checkMethodAvailable(select)
 </script>
 
 <div class="container">
@@ -182,8 +191,8 @@ try{
       <label>
         <span>Choose a Link method</span>
         <select on:change={toggleMethod}>
-          {#each Object.keys(methods) as _method}
-            <option selected={method === _method} value={_method}>{_method}</option>
+          {#each Object.entries(methods) as [_method, _opts]}
+            <option selected={method === _method} value={_method}>{_method} {_opts.networks ? `(${_opts.networks.join(",")})` : ""}</option>
           {/each}
         </select>
       </label>
@@ -225,7 +234,11 @@ try{
       </div>
       {/each}
       
-      <button class="submit" on:click={call}>Call method</button>
+      {#if (methods[method].networks || [network]).includes(network)}
+        <button class="submit" on:click={call}>Call method</button>
+      {:else}
+        <button disabled={true} class="submit">Method unavailable in {network}</button>
+      {/if}
     </div>
 
     <div class="code">
@@ -413,6 +426,12 @@ try{
 
   .submit:hover {
     background-color: #29b8ce
+  }
+
+  .submit:disabled {
+    background: grey;
+    opacity: .75;
+    cursor: not-allowed
   }
   
   .hljs {

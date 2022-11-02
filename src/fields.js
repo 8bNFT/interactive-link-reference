@@ -173,6 +173,28 @@ export const methods = {
     },
     getPublicKey: {
         fields: {}
+    },
+    makeOffer: {
+        networks: ["sandbox"],
+        types: ["ERC721"],
+        fields: {
+            base: true,
+            additional: ["amount"],
+            optional: ["currencyAddress"],
+            force_fields: true
+        }
+    },
+    cancelOffer: {
+        networks: ["sandbox"],
+        fields: {
+            additional: ["orderId"]
+        }
+    },
+    acceptOffer: {
+        networks: ["sandbox"],
+        fields: {
+            additional: ["orderId"]
+        }
     }
 }
 
