@@ -15,7 +15,7 @@ export default defineConfig({
   plugins: [svelte()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'),
+      'src': path.resolve(__dirname, 'src'),
       'https': path.resolve(__dirname, 'node_modules/stream-http')
     }
 }

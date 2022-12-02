@@ -19,6 +19,7 @@
     }
 
     $: _value, validateValue()
+    $: _value = value
 </script>
 
 <input class:error={_error} bind:value={_value}>
