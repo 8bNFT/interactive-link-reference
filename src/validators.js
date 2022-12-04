@@ -22,6 +22,18 @@ export const is_integer = (_n) => {
     }
 }
 
+export const is_positive_integer = (_n) => {
+    const n = new BigNumber(_n)
+
+    if(n.isNaN()) return { error: "Must be a number" }
+    if(!n.isInteger()) return { error: "Must be an integer" }
+    if(n.isLessThanOrEqualTo(new BigNumber(0))) return { error: "Must be a positive number" }
+    
+    return {
+        sanitized: n.toString()
+    }
+}
+
 export const is_number = (_n)=>{
     const n = new BigNumber(_n)
     if(n.isNaN()) return { error: "Must be a number" }

@@ -9,109 +9,64 @@
    * - introduce field dependency (required if one of is selected)
   */
 
-  import { Link } from '@imtbl/imx-sdk';
-  import { get_fields } from './fields'
-  import Input from './components/Input.svelte';
-  import hljs from 'highlight.js/lib/core';
-  import javascript from 'highlight.js/lib/languages/javascript';
+  import { get_fields, get_all_methods } from './fields'
   import Fields from './components/Fields.svelte';
+  import Label from './components/Label.svelte';
+  import CodeContainer from './components/CodeContainer.svelte';
+  import { LinkCodeGenerator } from './link_code_generator';
   // import { tick } from 'svelte';
-  hljs.registerLanguage('javascript', javascript);
+
+  const methods = get_all_methods()
 
   let network = "sandbox"
   let payload
   let method
   let fields
+  let code
+  let output = {}
+
+  const Link = new LinkCodeGenerator(network)
+
+  const execute_method = async () => {
+    const { status, data } = await Link.execute()
+    output = { status, data }
+  }
 
   $: method ? fields = get_fields(method) : fields = {}
-  
-  // const checkMethodAvailable = async select => {
-  //   if(!select) return
-  //   await tick()
-  //   if(select.value !== method) method = select.value
-  // }
-
-  // $: payload, payload = Object.fromEntries(Object.entries(payload).filter( ([_, v]) => v )), highlightCode()
-  // $: fields, constructPayload(), highlightCode(), output = {}
-  // $: method, payload = {}, fields = getFields(method)
-  // $: code_container, highlightCode()
-  // $: network, highlightCode()
-  // $: network, checkMethodAvailable(select)
+  $: Link.update_payload(method, payload)
+  $: method, payload, network, code = Link.code()
 </script>
 
 <div class="container">
   <div class="grid">
     <div>
-      <div class="toggle">
+      <div on:click={() => network = Link.toggle_network()} class="toggle">
         <span class:active={network === "sandbox"}>Sandbox</span>
         <span class:active={network === "mainnet"}>Mainnet</span>
       </div>
   
-      <label>
-        <span>Choose a Link method</span>
+      <Label label="Choose a Link method">
         <select bind:value={method}>
-          <option value="sell">sell</option>
-          <option value="buy">buy</option>
+          {#each methods as [group, meths]}
+            <optgroup label={group}>
+              {#each Object.keys(meths) as method}
+                <option value={method}>{method}</option>
+              {/each}
+            </optgroup>
+          {/each}
         </select>
-      </label>
+      </Label>
 
       {#key method}
-        <Fields {fields} bind:payload />
+        <Fields field_config={fields} bind:payload />
       {/key}
       
-      <div>
-        {JSON.stringify(payload, null, 4)}
-      </div>
-      
-      <!-- {#each fields as field (method + field.key)}
-      <div class="field">
-        <label for={field.options.type === "checkbox" ? "" : null}>
-          <span>{field.options.label || field.key}{field.options.optional ? " (optional)" : ""}</span>
-          {#if field.key === "type"}
-            <select on:change={(e)=>toggleType(e)}>
-              {#each field.options.children as child}
-                <option selected={field.options.selected === child} value={child}>{child}</option>
-              {/each}
-            </select>
-          {:else}
-            {#if field.options.type === "select" }
-              <select bind:value={payload[field.key]}>
-                {#each field.options.options as opts}
-                  <option value={opts.value}>{opts.label}</option>
-                {/each}
-              </select>
-            {:else if field.options.type == "checkbox"}
-              {#each field.options.options as opts}
-                <label style="display: block">
-                  <input 
-                    type="checkbox" 
-                    on:change={({target: { checked }}) => modifyCheckbox(field.key, opts.value, checked)} 
-                    value={opts.value}
-                  >
-                  {opts.label}
-                </label>
-              {/each}
-            {:else}
-              <Input bind:value={payload[field.key]} validator={field.options.validator} />
-            {/if}
-          {/if}
-        </label>
-      </div>
-      {/each} -->
-      
-      <!-- {#if (methods[method].networks || [network]).includes(network)}
-        <button class="submit" on:click={call}>Call method</button>
-      {:else}
-        <button disabled={true} class="submit">Method unavailable in {network}</button>
-      {/if} -->
+      <button class="submit" on:click={execute_method}>Call method</button>
     </div>
 
-    <!-- <div class="code">
-      <button on:click={copyCode}>Copy to clipboard</button>
-      <pre><code class="hljs" bind:this={code_container}></code></pre>
-    </div> -->
+    <CodeContainer {code} />
 
-    <!-- <div class="output">
+    <div class="output">
       <div class="icon">
         {#if output.data}
           {#if output.status === "error"}
@@ -133,11 +88,11 @@
         {/if}
       </div>
       <pre><code>{output.data && JSON.stringify(output.data || "", null, 4) || ""}</code></pre>
-    </div> -->
+    </div>
   </div>
 
   <a href="https://docs.x.immutable.com/docs" target="_blank">
-    <img class="logo" src="./logo.png" />
+    <img class="logo" src="./logo.svg" />
   </a>
 </div>
 
@@ -177,6 +132,7 @@
   .grid > div:first-child {
     padding: 1rem;
     grid-row: span 2;
+    min-width: 100px
   }
 
   .grid > div {
@@ -207,52 +163,13 @@
     color: white;
   }
 
-  pre {
-    margin: 0
-  }
-
-  .code {
-    position: relative;
-    background: #282a36;
-    padding: .75rem;
-  }
-
-  .code button {
-    position: absolute;
-    top: 10px;
-    cursor: pointer;
-    right: 10px;
-    font-size: .75rem;
-    background: #4d5269;
-    padding: .25rem .5rem;
-    border: none;
-    color: white;
-    opacity: .5;
-    transition: opacity .2s
-  }
-
-  .code button:hover {
-    opacity: 1
-  }
-
-  .code *, :global(code > *), .output * {
+  .output * {
     font-family: monospace !important
   }
 
   .output {
     background: #f0f0f0;
     padding: .75rem;
-  }
-
-  label > span {
-    display: block;
-    font-size: .9rem;
-    opacity: .6;
-    margin-bottom: .35rem
-  }
-
-  .field {
-    margin: .75rem 0
   }
 
   .icon {
@@ -297,9 +214,5 @@
     background: grey;
     opacity: .75;
     cursor: not-allowed
-  }
-  
-  .hljs {
-    overflow: initial
   }
 </style>

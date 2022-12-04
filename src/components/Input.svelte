@@ -1,17 +1,19 @@
 <script>
-    export let value, validator
+    export let value, field
+
+    import Label from "./Label.svelte";
 
     let _value, _error
 
     const validateValue = ()=>{
         _error = false
-        if(!_value) return value = false
+        if(!_value) return value = "VALUE_NOT_SET"
 
-        if(!validator) return value = _value
+        if(!field.validator) return value = _value
         
-        let { error, sanitized } = validator(_value)
+        let { error, sanitized } = field.validator(_value)
         if(error){
-            value = false
+            value = "VALUE_NOT_SET"
             return _error = error
         }
 
@@ -22,8 +24,10 @@
     $: _value = value
 </script>
 
-<input class:error={_error} bind:value={_value}>
-<div class="error_message">{_error}</div>
+<Label label={field.label}>
+    <input class:error={_error} bind:value={_value}>
+    <div class="error_message">{_error}</div>
+</Label>
 
 <style>
     .error_message {

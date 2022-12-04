@@ -1,13 +1,15 @@
 <script>
-    export let fields, payload, parent
+    export let field_config, payload, parent
 
     import { get_payload } from "src/fields";
     import Fields from "./Fields.svelte";
+    import Label from "./Label.svelte";
 
-    payload = get_payload(fields)
+    payload = get_payload(field_config)
 </script>
 
-
-{#each Object.entries(fields.fields || {}) as [key, fields]}
-    <Fields parent={{parent, fields, payload}} bind:payload={payload[key]} fields={fields} />
-{/each}
+<Label click={false} label={field_config.label}>
+    {#each Object.entries(field_config.fields || {}) as [key, field] (key)}
+        <Fields parent={{parent, payload}} bind:payload={payload[key]} field_config={field} />
+    {/each}
+</Label>
