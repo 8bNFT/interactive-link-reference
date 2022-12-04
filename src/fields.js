@@ -1,4 +1,4 @@
-import { is_number, is_integer, is_valid_eth_address, is_positive_integer } from "./validators"
+import { is_valid_eth_address, is_positive_integer, is_positive_number } from "./validators"
 
 export const types = {
     ETH: "ETH",
@@ -48,7 +48,7 @@ const common_fields = {
                     },
                     percentage: {
                         label: "Fee percentage",
-                        validator: is_number
+                        validator: is_positive_number
                     }
                 }
             }
@@ -74,7 +74,7 @@ const type_fields = {
     amount: {
         label: "Amount",
         include: ({ type }, { type: current_type } = {}) => [types.ETH, types.ERC20].includes(current_type || type),
-        validator: is_positive_integer
+        validator: is_positive_number
     }
 }
 
@@ -190,7 +190,7 @@ const fields = {
                     fields: {
                         orderId: {
                             label: "Order ID",
-                            validator: is_integer
+                            validator: is_positive_integer
                         }
                     }
                 },
