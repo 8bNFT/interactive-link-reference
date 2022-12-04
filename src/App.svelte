@@ -1,11 +1,8 @@
 <script>
   /**
    * Planned changes
-   * - modify field definition, make it more readable and sane
    * - allow for network specific options, fields
    * - introduce value parsers
-   * - make element generation more generic, allow for other new types
-   * - enable children (transfer, batchTransferNFT), child elements
    * - introduce field dependency (required if one of is selected)
   */
 
