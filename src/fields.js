@@ -220,6 +220,17 @@ const fields = {
             }
         }
     },
+    primarySale: {
+        nftCheckoutPrimary: {
+            fields: {
+                sellerWalletAddress: common_fields.toAddress,
+                contractAddress: field(type_fields.tokenAddress, { include: true }),
+                offerId: {
+                    label: "Offer ID"
+                }
+            }
+        }
+    },
     transfer: {
         transfer: {
             result_type: "array",
