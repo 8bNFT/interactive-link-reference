@@ -200,6 +200,7 @@ const fields = {
     },
     offers: {
         makeOffer: {
+            networks: [], // alternative to disabled: true, allows method to be selected, but can't be called
             fields: {
                 type: {
                     field_type: "constant",
@@ -214,6 +215,7 @@ const fields = {
             }
         },
         cancelOffer: {
+            networks: [], // alternative to disabled: true, allows method to be selected, but can't be called
             fields: {
                 orderId: {
                     label: "Order ID"
@@ -221,6 +223,7 @@ const fields = {
             }
         },
         acceptOffer: {
+            networks: [], // alternative to disabled: true, allows method to be selected, but can't be called
             fields: {
                 orderId: {
                     label: "Order ID"
@@ -291,8 +294,11 @@ const fields = {
     }
 }
 
-export const get_fields = key => ({result_type: "object", ...(Object.values(fields).find(v => key in v) || {})[key]})
-export const get_all_methods = () => Object.entries(fields)
+const all_fields = Object.values(fields).reduce((dict, v) => ({...dict, ...v}), {})
+
+export const get_fields = key => ({result_type: "object", ...all_fields[key]})
+export const get_method_groups = () => Object.entries(fields)
+export const get_all_methods = () => all_fields
 
 export const get_payload = ({ result_type, field_type }) => {
     if(!result_type && !field_type) return ""

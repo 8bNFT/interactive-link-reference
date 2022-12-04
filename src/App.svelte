@@ -6,7 +6,7 @@
    * - introduce field dependency (required if one of is selected)
   */
 
-  import { get_fields, get_all_methods } from './fields'
+  import { get_fields, get_method_groups } from './fields'
   import Fields from './components/Fields.svelte';
   import Label from './components/Label.svelte';
   import CodeContainer from './components/CodeContainer.svelte';
@@ -14,7 +14,7 @@
   import { LinkCodeGenerator } from './link_code_generator';
   import { DOCS_REFERENCES } from './docs';
 
-  const methods = get_all_methods()
+  const methods = get_method_groups()
 
   let network = "sandbox"
   let payload, method, fields, code, output = {}
@@ -40,8 +40,8 @@
         <select bind:value={method}>
           {#each methods as [group, meths]}
             <optgroup label={group}>
-              {#each Object.keys(meths) as method}
-                <option value={method}>{method}</option>
+              {#each Object.entries(meths) as [method, options]}
+                <option value={method} disabled={options.disabled === true}>{method} {options.disabled ? "(disabled)" : (options.networks || []).join(", ")}</option>
               {/each}
             </optgroup>
           {/each}
@@ -57,7 +57,11 @@
         <Fields field_config={fields} bind:payload />
       {/key}
       
-      <button class="submit" on:click={execute_method}>Call method</button>
+      {#if fields.disabled === true || (Array.isArray(fields.networks) && !fields.networks.includes(network))}
+        <button class="submit" disabled={true}>Method unavailable</button>
+      {:else}
+        <button class="submit" on:click={execute_method}>Call method</button>
+      {/if}
     </div>
 
     <CodeContainer {code} />
@@ -76,15 +80,13 @@
   .logo {
     margin-top: 2rem;
     width: 180px;
-    margin-left: calc(50% - 120px);
-    filter: saturate(0);
-    opacity: .65;
-    transition: all .5s
+    margin-left: calc(50% - 90px);
+    opacity: .5;
+    transition: opacity .5s
   }
 
   .logo:hover {
     opacity: 1;
-    filter: saturate(1)
   }
 
   .grid {

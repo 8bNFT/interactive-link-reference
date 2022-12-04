@@ -9,7 +9,7 @@
 <Label label={field.label}>
     <select bind:value>
         {#each field.options as option}
-            <option value={option.value}>{option.label}</option>
+            <option disabled={option.disabled === true} value={option.value}>{option.label}</option>
         {/each}
     </select>
 </Label>
