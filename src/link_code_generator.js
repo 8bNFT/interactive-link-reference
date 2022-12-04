@@ -78,15 +78,18 @@ try{
         }
 
         try{
+            const data = await link[method](this.payload)
+            console.info(`[Success] ${method}:`, data)
             return {
                 status: "success",
-                data: await link[method](this.payload),
+                data,
                 method
             }
         }catch(err){
+            console.error(`[Error] ${method}`, err)
             return {
                 status: "error",
-                data: err.message || JSON.stringify(err),
+                data: err ? (err.message || JSON.stringify(err)) : "Unknown error occurred",
                 method
             }
         }
