@@ -65,24 +65,29 @@ try{
     }
 
     async execute(){
+        const method = this.method
+        const missing = [...this.missing]
         const link = new Link(this.url)
 
-        if(this.missing.length){
+        if(missing.length){
             return {
                 status: "error",
-                data: "Required fields missing: " + this.missing.join(", ")
+                data: "Required fields missing: " + missing.join(", "),
+                method
             }
         }
 
         try{
             return {
                 status: "success",
-                data: await link[this.method](this.payload)
+                data: await link[method](this.payload),
+                method
             }
         }catch(err){
             return {
                 status: "error",
-                data: err.message || JSON.stringify(err)
+                data: err.message || JSON.stringify(err),
+                method
             }
         }
     }

@@ -101,8 +101,16 @@ const fields = {
     onramp: {
         deposit: {
             fields: {
-                type: common_fields.all_types,
-                ...type_fields
+                type: {
+                    ...common_fields.all_types,
+                    optional: true,
+                    options: [
+                        { label: "Any token", value: undefined },
+                        ...common_fields.all_types.options,
+                    ],
+                },
+                ...type_fields,
+                amount: field(type_fields.amount, { optional: true })
             }
         },
         fiatToCrypto: {
