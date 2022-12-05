@@ -8,6 +8,7 @@ const types = {
 
 const PLACEHOLDERS = {
     order: "129523",
+    offer: "offer_1234",
     recipient: "0xc8c3d38A5DB18272D99BfD376aA74F6a070B433F",
     currency: "0xb3dfd3dfb829b394f2467f4396f39ece7818d876",
     symbol: "FCT",
@@ -263,14 +264,14 @@ const fields = {
             }
         }
     },
-    primarySale: {
+    nftCheckout: {
         nftCheckoutPrimary: {
             fields: {
                 sellerWalletAddress: common_fields.toAddress,
                 contractAddress: field(type_fields.tokenAddress, { include: true }),
                 offerId: {
                     label: "Offer ID",
-                    placeholder: PLACEHOLDERS.order
+                    placeholder: PLACEHOLDERS.offer
                 }
             }
         }
