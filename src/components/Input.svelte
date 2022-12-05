@@ -24,8 +24,8 @@
     $: _value = value
 </script>
 
-<Label label={field.label}>
-    <input class:error={_error} bind:value={_value}>
+<Label label={field.label} optional={field.optional}>
+    <input placeholder={field.placeholder || ""} class:error={_error} bind:value={_value}>
     <div class="error_message">{_error}</div>
 </Label>
 

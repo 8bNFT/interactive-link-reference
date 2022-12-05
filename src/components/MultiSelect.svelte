@@ -9,7 +9,7 @@
     $: payload = Object.entries(internal_payload).flatMap(([k, v]) => v ? k : [])
 </script>
 
-<Label click={false} label={field.label}>
+<Label click={false} label={field.label} optional={field.optional}>
     {#each field.options as option}
         <InlineLabel small={true} label={option.label}>
             <input type="checkbox" bind:checked={internal_payload[option.value || option.label]}>

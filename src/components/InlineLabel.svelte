@@ -1,11 +1,11 @@
 <script>
-    export let label, small
+    export let label, small, optional = false
 </script>
 
 <label class:small>
     <slot></slot>
     {#if label}
-        <span>{label}</span>
+        <span>{label}{optional ? " (optional)" : ""}</span>
     {/if}
 </label>
 

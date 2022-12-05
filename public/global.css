@@ -30,6 +30,10 @@ input, select {
     border-radius: 3px;
 }
 
+input::placeholder {
+    color: #b1b1b1
+}
+
 input:focus, input:active,
 select:focus, select:active {
     outline: 1px solid var(--accent);

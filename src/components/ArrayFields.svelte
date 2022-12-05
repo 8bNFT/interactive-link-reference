@@ -17,7 +17,7 @@
     $: payload = current_fields.map(v => v.payload)
 </script>
 
-<Label click={false} label={field_config.label}>
+<Label click={false} label={field_config.label} optional={field_config.optional}>
     <div class="group">
         {#each current_fields as field, index (index)}
             <div class="child">

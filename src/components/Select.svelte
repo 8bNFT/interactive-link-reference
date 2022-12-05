@@ -6,7 +6,7 @@
     value = field.options[0].value
 </script>
 
-<Label label={field.label}>
+<Label label={field.label} optional={field.optional}>
     <select bind:value>
         {#each field.options as option}
             <option disabled={option.disabled === true} value={option.value}>{option.label}</option>

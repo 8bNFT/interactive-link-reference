@@ -1,9 +1,22 @@
-import { is_valid_eth_address, is_positive_integer, is_positive_number } from "./validators"
+import { is_valid_eth_address, is_positive_integer, is_positive_number, is_lt } from "./validators"
 
-export const types = {
+const types = {
     ETH: "ETH",
     ERC20: "ERC20",
     ERC721: "ERC721"
+}
+
+const PLACEHOLDERS = {
+    order: "129523",
+    recipient: "0xc8c3d38A5DB18272D99BfD376aA74F6a070B433F",
+    currency: "0xb3dfd3dfb829b394f2467f4396f39ece7818d876",
+    symbol: "FCT",
+    collection: "0x69b96d84d35171120940fdcf211b18292ae10e9c",
+    amount: "0.0258",
+    percentage: "2.25",
+    token_id: "19",
+    message_to_sign: "I want to log into Tools. ID: #982832902",
+    message_description: "Sign this message to authenticate on Tools."
 }
 
 /**
@@ -31,7 +44,8 @@ const common_fields = {
     },
     toAddress: {
         label: "Recipient",
-        validator: is_valid_eth_address
+        validator: is_valid_eth_address,
+        placeholder: PLACEHOLDERS.recipient
     },
     fees: {
         max: 5,
@@ -44,11 +58,22 @@ const common_fields = {
                 fields: {
                     recipient: {
                         label: "Fee recipient",
-                        validator: is_valid_eth_address
+                        validator: is_valid_eth_address,
+                        placeholder: PLACEHOLDERS.recipient
                     },
                     percentage: {
                         label: "Fee percentage",
-                        validator: is_positive_number
+                        validator: v => {
+                            const { error } = is_positive_number(v)
+                            if(error) return { error }
+                            const { error: more_than_100, sanitized } = is_lt(v, "100")
+                            if(more_than_100) return { error: more_than_100 }
+
+                            return {
+                                sanitized
+                            }
+                        },
+                        placeholder: PLACEHOLDERS.percentage
                     }
                 }
             }
@@ -60,26 +85,30 @@ const type_fields = {
     tokenId: {
         label: "Token ID",
         include: ({ type }, { type: current_type } = {}) => types.ERC721 === (current_type || type),
-        validator: is_positive_integer
+        validator: is_positive_integer,
+        placeholder: PLACEHOLDERS.token_id
     },
     tokenAddress: {
         label: "Token Address",
         include: ({ type }, { type: current_type } = {}) => [types.ERC721, types.ERC20].includes(current_type || type),
-        validator: is_valid_eth_address
+        validator: is_valid_eth_address,
+        placeholder: PLACEHOLDERS.collection
     },
     symbol: {
         label: "Token Symbol",
         include: ({ type }, { type: current_type } = {}) => types.ERC20 === (current_type || type),
+        placeholder: PLACEHOLDERS.symbol
     },
     amount: {
         label: "Amount",
         include: ({ type }, { type: current_type } = {}) => [types.ETH, types.ERC20].includes(current_type || type),
-        validator: is_positive_number
+        validator: is_positive_number,
+        placeholder: PLACEHOLDERS.amount
     }
 }
 
 const fields = {
-    setup: {
+    initialize: {
         setup: {
             fields: {
                 providerPreference: {
@@ -158,19 +187,16 @@ const fields = {
     orders: {
         sell: {
             fields: {
-                currency_type: field(common_fields.currency_type, { ignore: true }),
-                amount: field(type_fields.amount, { include: true, optional: true}),
-                type: {
-                    value: "ERC721",
-                    ignore: true,
-                    field_type: "constant"
-                },
+                tokenId: field(type_fields.tokenId, { include: true }),
+                tokenAddress: field(type_fields.tokenAddress, { include: true }),
+                currency_type: field(common_fields.currency_type, { include: true, ignore: true }),
                 currencyAddress: {
                     label: "ERC20 address",
                     include: ({ currency_type }) => currency_type === types.ERC20,
-                    validator: is_valid_eth_address
+                    validator: is_valid_eth_address,
+                    placeholder: PLACEHOLDERS.currency
                 },
-                ...type_fields,
+                amount: field(type_fields.amount, { include: true, optional: true }),
                 fees: common_fields.fees
             }
         },
@@ -178,7 +204,8 @@ const fields = {
             fields: {
                 orderId: {
                     label: "Order ID",
-                    validator: is_positive_integer
+                    validator: is_positive_integer,
+                    placeholder: PLACEHOLDERS.order
                 }
             }
         },
@@ -190,7 +217,8 @@ const fields = {
                     fields: {
                         orderId: {
                             label: "Order ID",
-                            validator: is_positive_integer
+                            validator: is_positive_integer,
+                            placeholder: PLACEHOLDERS.order
                         }
                     }
                 },
@@ -210,7 +238,9 @@ const fields = {
                 amount: field(type_fields.amount, { include: true }),
                 currencyAddress: {
                     label: "ERC20 address",
-                    validator: is_valid_eth_address
+                    validator: is_valid_eth_address,
+                    optional: true,
+                    placeholder: PLACEHOLDERS.currency
                 }   
             }
         },
@@ -218,7 +248,8 @@ const fields = {
             networks: [], // alternative to disabled: true, allows method to be selected, but can't be called
             fields: {
                 orderId: {
-                    label: "Order ID"
+                    label: "Order ID",
+                    placeholder: PLACEHOLDERS.order
                 }
             }
         },
@@ -226,7 +257,8 @@ const fields = {
             networks: [], // alternative to disabled: true, allows method to be selected, but can't be called
             fields: {
                 orderId: {
-                    label: "Order ID"
+                    label: "Order ID",
+                    placeholder: PLACEHOLDERS.order
                 }
             }
         }
@@ -237,12 +269,13 @@ const fields = {
                 sellerWalletAddress: common_fields.toAddress,
                 contractAddress: field(type_fields.tokenAddress, { include: true }),
                 offerId: {
-                    label: "Offer ID"
+                    label: "Offer ID",
+                    placeholder: PLACEHOLDERS.order
                 }
             }
         }
     },
-    transfer: {
+    transfers: {
         transfer: {
             result_type: "array",
             label: "Tokens",
@@ -283,10 +316,12 @@ const fields = {
         sign: {
             fields: {
                 message: {
-                    label: "Message to sign"
+                    label: "Message to sign",
+                    placeholder: PLACEHOLDERS.message_to_sign
                 },
                 description: {
-                    label: "Description"
+                    label: "Description",
+                    placeholder: PLACEHOLDERS.message_description
                 }
             }
         },
