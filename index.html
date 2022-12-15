@@ -9,12 +9,10 @@
     <title>[IMX] Link reference</title>
     <script type="module">
       // I hate bundlers
-      import { Buffer } from "buffer";
+      import { Buffer } from "buffer/";
       window.Buffer = Buffer
-    </script>
-    <script>
-      globalThis.global = window;
-      globalThis.process = {env: {}}
+      window.global = window
+      window.process = {env: {}}
     </script>
   </head>
   <body>

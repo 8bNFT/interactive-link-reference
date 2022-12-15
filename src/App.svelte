@@ -69,14 +69,31 @@
     <Output {output} />
   </div>
 
-  <a href="https://docs.x.immutable.com/docs" target="_blank">
-    <img class="logo" src="./logo.svg" />
-  </a>
+  <div class="legacy">
+    <a href="https://tools.immutable.com/link-reference-legacy/">
+      Click here to access the legacy version of this tool.
+    </a>
+  </div>
+  <div>
+    <a href="https://docs.x.immutable.com/docs" target="_blank">
+      <img class="logo" src="./logo.svg" />
+    </a>
+  </div>
 </div>
 
 
 
 <style>
+  .legacy {
+    text-align: center;
+    margin-top: 1rem
+  }
+
+  .legacy a {
+    font-size: .8rem;
+    color: var(--accent)
+  }
+
   .logo {
     margin-top: 2rem;
     width: 180px;

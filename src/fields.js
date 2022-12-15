@@ -229,11 +229,12 @@ const fields = {
     },
     offers: {
         makeOffer: {
-            networks: [], // alternative to disabled: true, allows method to be selected, but can't be called
+            // networks: [], // alternative to disabled: true, allows method to be selected, but can't be called
             fields: {
                 type: {
                     field_type: "constant",
-                    value: "ERC721"
+                    value: "ERC721",
+                    ignore: true
                 },
                 ...type_fields,
                 amount: field(type_fields.amount, { include: true }),
@@ -246,7 +247,7 @@ const fields = {
             }
         },
         cancelOffer: {
-            networks: [], // alternative to disabled: true, allows method to be selected, but can't be called
+            // networks: [], // alternative to disabled: true, allows method to be selected, but can't be called
             fields: {
                 orderId: {
                     label: "Order ID",
@@ -255,7 +256,7 @@ const fields = {
             }
         },
         acceptOffer: {
-            networks: [], // alternative to disabled: true, allows method to be selected, but can't be called
+            // networks: [], // alternative to disabled: true, allows method to be selected, but can't be called
             fields: {
                 orderId: {
                     label: "Order ID",
